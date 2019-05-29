@@ -49,10 +49,13 @@ def findSimilar(dirpath):
         step = int(min(pair[0].object.size[0] * pair[0].object.size[1], pair[1].object.size[0] * pair[1].object.size[1]) / 10000)
         start = time.process_time()
         res = algs.mse(pair[0].object, pair[1].object, step)
-        print(time.process_time() - start)
 
-        if (res == 0):
-            print(pair[0].path, pair[1].path)
+        print("-----------")
+        print(pair[0].path, pair[1].path)
+        print('Time - ', time.process_time() - start, 'MSE - ', res)
+
+        if (res < 4000.0):
+            print("\nSimilar images found !!!\n")
     print('Search has taken - ', time.process_time() - searchStart)
 
 # console working module
