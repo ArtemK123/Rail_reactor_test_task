@@ -2,80 +2,83 @@ import os, sys
 import numpy as np
 import itertools
 import multiprocessing as mp
-from PIL import Image
+import time
+import math
+import comparingAlgs as algs
+from PIL import Image as PILImage
 
-im1 = Image.open('./dev_dataset/dev_dataset/1.jpg')
-im2 = Image.open('./dev_dataset/dev_dataset/1_duplicate.jpg')
+helpText = '''
+usage: solution.py [-h] --path PATH
 
-def rgbToGray(r, g, b):
-    return (0.3 * r) + (0.59 * g) + (0.11 * b)
+First test task on images similarity.
 
-def pixelToGray(pixel):
-    return rgbToGray(pixel[0], pixel[1], pixel[2])
+optional arguments:
+-h, --help            show this help message and exit
+--path PATH           folder with images
+'''
 
+withoutPathText = '''
+solution.py: error: the following arguments are required: --path
+'''
 
-def mse(imageA, imageB):
-    imageB = imageB.resize(imageA.size)
+wrongDirText = '''
+solution.py: error: given directory doesn`t exist
+'''
 
-    pixelsA = np.asanyarray(imageA.getdata())
-    pixelsB = np.asanyarray(imageB.getdata())
+class Image:
+    def __init__(self, path):
+        self.path = path
+        self.object = PILImage.open(path)
 
-    err = (np.square(map(lambda pixel: pixelToGray, pixelsA) - map(lambda pixel: pixelToGray, pixelsB))).mean(2)
-
-    return err
-
-def checkSimilarImages(pathPairs):
-    result = []
-    for pair in pathPairs:
-        image1 = images[pair[0]]
-        image2 = images[pair[1]]
-        if (mse(image1, image2) == 0):
-            result.append(pair)
-
-dirpath = sys.argv[1]
-filePathes = [os.path.join(dirpath, f) for f in os.listdir(dirpath) if os.path.isfile(os.path.join(dirpath, f))]
+    object = None
+    path = ''
 
 images = dict()
-for path in filePathes:
-    images[path] = Image.open(path)
 
-filePairs = itertools.combinations(filePathes, 2)
+def findSimilar(dirpath):
+    filePathes = [os.path.join(dirpath, f) for f in os.listdir(dirpath) if os.path.isfile(os.path.join(dirpath, f))]
+
+    images = []
+    for path in filePathes:
+        images.append(Image(path))
+
+    imagePairs = itertools.combinations(images, 2)
+
+    searchStart = time.process_time()
+    for pair in imagePairs:
+        step = int(min(pair[0].object.size[0] * pair[0].object.size[1], pair[1].object.size[0] * pair[1].object.size[1]) / 10000)
+        start = time.process_time()
+        res = algs.mse(pair[0].object, pair[1].object, step)
+        print(time.process_time() - start)
+
+        if (res == 0):
+            print(pair[0].path, pair[1].path)
+    print('Search has taken - ', time.process_time() - searchStart)
+
+# console working module
+if (len(sys.argv) == 3):
+    if (sys.argv[1] == '--path'):
+        if os.path.isdir(sys.argv[2]):
+            findSimilar(sys.argv[2])
+        else:
+            print(wrongDirText)
+    else:
+        print(withoutPathText)
+elif (len(sys.argv) == 2):
+    if (sys.argv[1] == '-h' or sys.argv[1] == '--help'):
+        print(helpText)
+    elif (sys.argv[1] == '--path'):
+        print(wrongDirText)
+    else:
+        print(withoutPathText)
 
 # pool = mp.Pool(mp.cpu_count())
 # results = [pool.apply(checkSimilarImages, args=(pair)) for pair in filePairs]
 
-print(mse(im1, im2))
 
-
-
-# for pair in filePairs:
-#     if (mse(images[pair[0]], images[pair[1]]) == 0):
-#         print(pair)
-
+# im1 = PILImage.open('./dev_dataset/dev_dataset/11.jpg')
+# im2 = PILImage.open('./dev_dataset/dev_dataset/11_duplicate.jpg')
 #
-# def ssim(img1, img2, cs_map=False):
-#     img1 = img1.astype(numpy.float64)
-#     img2 = img2.astype(numpy.float64)
-#     size = 11
-#     sigma = 1.5
-#     window = gauss.fspecial_gauss(size, sigma)
-#     K1 = 0.01
-#     K2 = 0.03
-#     L = 255 #bitdepth of image
-#     C1 = (K1*L)**2
-#     C2 = (K2*L)**2
-#     mu1 = signal.fftconvolve(window, img1, mode='valid')
-#     mu2 = signal.fftconvolve(window, img2, mode='valid')
-#     mu1_sq = mu1*mu1
-#     mu2_sq = mu2*mu2
-#     mu1_mu2 = mu1*mu2
-#     sigma1_sq = signal.fftconvolve(window, img1*img1, mode='valid') - mu1_sq
-#     sigma2_sq = signal.fftconvolve(window, img2*img2, mode='valid') - mu2_sq
-#     sigma12 = signal.fftconvolve(window, img1*img2, mode='valid') - mu1_mu2
-#     if cs_map:
-#         return (((2*mu1_mu2 + C1)*(2*sigma12 + C2))/((mu1_sq + mu2_sq + C1)*
-#                     (sigma1_sq + sigma2_sq + C2)),
-#                 (2.0*sigma12 + C2)/(sigma1_sq + sigma2_sq + C2))
-#     else:
-#         return ((2*mu1_mu2 + C1)*(2*sigma12 + C2))/((mu1_sq + mu2_sq + C1)*
-#                     (sigma1_sq + sigma2_sq + C2))
+# startTime = time.process_time()
+# print("MSE result - ", algs.mse(im1, im2, 10))
+# print("Time of work - ", time.process_time() - startTime)
