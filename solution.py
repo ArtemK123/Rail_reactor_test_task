@@ -1,9 +1,7 @@
 import os, sys
 import numpy as np
 import itertools
-import multiprocessing as mp
 import time
-import math
 import comparingAlgs as algs
 from PIL import Image as PILImage
 
@@ -36,7 +34,7 @@ class Image:
 images = dict()
 
 def findSimilar(dirpath):
-    filePathes = [os.path.join(dirpath, f) for f in os.listdir(dirpath) if os.path.isfile(os.path.join(dirpath, f))]
+    filePathes = [(dirpath + "/" + f) for f in os.listdir(dirpath) if os.path.isfile(os.path.join(dirpath, f))]
 
     images = []
     for path in filePathes:
@@ -48,18 +46,25 @@ def findSimilar(dirpath):
     for pair in imagePairs:
         step = int(min(pair[0].object.size[0] * pair[0].object.size[1], pair[1].object.size[0] * pair[1].object.size[1]) / 10000)
         start = time.process_time()
-        res = algs.mse(pair[0].object, pair[1].object, step)
 
-        print("-----------")
-        print(pair[0].path, pair[1].path)
-        print('Time - ', time.process_time() - start, 'MSE - ', res)
+        mse = algs.mse(pair[0].object, pair[1].object, step)
+        ssim = algs.mssim(pair[0].object.resize((512, 512)), pair[1].object.resize((512, 512)))
 
-        if (res < 4000.0):
-            print("\nSimilar images found !!!\n")
+        # print("-----------")
+        # print(pair[0].path, pair[1].path)
+        # print('Time - ', time.process_time() - start, 'MSE - ', mse, 'SSIM - ', ssim)
+
+        if (mse < 4000.0 and ssim > 0.4):
+            print("-----------")
+            print(pair[0].path.split('/').pop(), pair[1].path.split('/').pop())
+            print('Time - ', time.process_time() - start, 'MSE - ', mse, 'SSIM - ', ssim)
+
     print('Search has taken - ', time.process_time() - searchStart)
 
 # console working module
-if (len(sys.argv) == 3):
+if (len(sys.argv) == 4 and (sys.argv[1] == '-h' or sys.argv[1] == '--help')):
+    print(helpText)
+elif (len(sys.argv) == 3):
     if (sys.argv[1] == '--path'):
         if os.path.isdir(sys.argv[2]):
             findSimilar(sys.argv[2])
@@ -75,13 +80,13 @@ elif (len(sys.argv) == 2):
     else:
         print(withoutPathText)
 
-# pool = mp.Pool(mp.cpu_count())
-# results = [pool.apply(checkSimilarImages, args=(pair)) for pair in filePairs]
 
+path1 = './dev_dataset/dev_dataset/1.jpg'
+path2 = './dev_dataset/dev_dataset/1_duplicate.jpg'
 
-# im1 = PILImage.open('./dev_dataset/dev_dataset/11.jpg')
-# im2 = PILImage.open('./dev_dataset/dev_dataset/11_duplicate.jpg')
-#
+im1 = PILImage.open(path1)
+im2 = PILImage.open(path2)
 # startTime = time.process_time()
-# print("MSE result - ", algs.mse(im1, im2, 10))
+# print("Result - ", algs.mssim(im1.resize((512, 512)), im2.resize((512, 512))))
 # print("Time of work - ", time.process_time() - startTime)
+
