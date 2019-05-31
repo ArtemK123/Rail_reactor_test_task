@@ -24,6 +24,7 @@ solution.py: error: given directory doesn`t exist
 '''
 
 class Image:
+    # this class represents image and it was creating for chaining path to image with pillow object
     def __init__(self, path):
         self.path = path
         self.object = PILImage.open(path)
@@ -34,6 +35,7 @@ class Image:
 images = dict()
 
 def findSimilar(dirpath):
+    # finding all images in directory
     filePathes = [(dirpath + "/" + f) for f in os.listdir(dirpath) if os.path.isfile(os.path.join(dirpath, f))]
 
     images = []
@@ -80,13 +82,4 @@ elif (len(sys.argv) == 2):
     else:
         print(withoutPathText)
 
-
-path1 = './dev_dataset/dev_dataset/1.jpg'
-path2 = './dev_dataset/dev_dataset/1_duplicate.jpg'
-
-im1 = PILImage.open(path1)
-im2 = PILImage.open(path2)
-# startTime = time.process_time()
-# print("Result - ", algs.mssim(im1.resize((512, 512)), im2.resize((512, 512))))
-# print("Time of work - ", time.process_time() - startTime)
 

@@ -2,9 +2,11 @@ import numpy as np
 from PIL import Image as PILImage
 
 def rgbToGray(r, g, b):
+    # function for transforming colored images to grayscale
     return (0.3 * r) + (0.59 * g) + (0.11 * b)
 
 def pixelToGray(pixel):
+    #
     return rgbToGray(pixel[0], pixel[1], pixel[2])
 
 def makeSameSize(imageA, imageB):
@@ -17,6 +19,8 @@ def makeSameSize(imageA, imageB):
     return(imageA, imageB)
 
 def mseNumpy(imageA, imageB, *args):
+    # Mean Square Error for 2 images using numpy
+
     (imageA, imageB) = makeSameSize(imageA, imageB)
 
     pixelsA = np.array(imageA.convert("L"))
@@ -26,6 +30,8 @@ def mseNumpy(imageA, imageB, *args):
     return err
 
 def mse(imageA, imageB, step = 1):
+    # Mean Square Error without numpy. If step != 1 - not every pixel will be used in comparing
+
     (imageA, imageB) = makeSameSize(imageA, imageB)
 
     pixelsA = imageA.convert("L").getdata()
@@ -47,6 +53,7 @@ def gaussMatrix(width, height, sigma = 1.5):
     # function returns width*height Gauss matrix for weighting values
     # width and height must be odd
 
+
     stepX = int(width / 2)
     stepY = int(height / 2)
     matrix = np.zeros((width, height))
@@ -58,7 +65,7 @@ def gaussMatrix(width, height, sigma = 1.5):
 def ssim(A, B, weightMatrix = None):
     # ssim algorithm for grayscale image matrixs - was described by Zhou Wang
     # http://www.cns.nyu.edu/pub/lcv/wang03-preprint.pdf
-    # A, B - matrixs of pixels, weightMatrix - gauss matrix
+    # A, B - matrixs of pixels, weightMatrix - gauss matrix, can be passed as argument or created in function
 
     if (A.shape != B.shape):
         raise Exception('matrixs have different size')
@@ -85,6 +92,8 @@ def ssim(A, B, weightMatrix = None):
 
 def mssim(imageA, imageB):
     # function returns mean structural similarity index for 2 images
+    # there is used the 11x11 frame and it`s moved through images
+
     (imageA, imageB) = makeSameSize(imageA, imageB)
     winSize = 11
 
