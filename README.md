@@ -1,6 +1,6 @@
 # Rail_reactor_test_task
 
-This is console program for comparing images in given directory. 
+This is a console program for comparing images in given directory. 
 
 Usage: python solution.py [-h] --path PATH
 
